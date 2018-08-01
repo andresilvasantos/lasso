@@ -1,8 +1,8 @@
-var UglifyJS = require('uglify-js');
+var UglifyJS = require('uglify-es');
 var internalOptions = ['inlineOnly'];
 var hasOwn = Object.prototype.hasOwnProperty;
 
-function minify(src, pluginOptions) {
+function minify(src, pluginOptions, dependency) {
     var minifyOptions = {};
     for (var key in pluginOptions) {
         if (hasOwn.call(pluginOptions, key) && internalOptions.indexOf(key) === -1) {
@@ -10,7 +10,10 @@ function minify(src, pluginOptions) {
         }
     }
 
-    return UglifyJS.minify(src, minifyOptions).code;
+    var result = UglifyJS.minify(src, minifyOptions)
+    if(result.error) console.log('Error:', dependency.file, result.error)
+    if(result.warnings) console.log('Warning:', dependency.file, result.warnings)
+    return result.code
 }
 
 function isInline(lassoContext) {
@@ -40,7 +43,7 @@ module.exports = function (lasso, pluginConfig) {
             }
 
             try {
-                var minified = minify(code, pluginConfig);
+                var minified = minify(code, pluginConfig, lassoContext.dependency);
                 if (minified.length && !minified.endsWith(';')) {
                     minified += ';';
                 }
