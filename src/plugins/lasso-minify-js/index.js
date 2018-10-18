@@ -1,4 +1,5 @@
 var UglifyJS = require('uglify-es');
+var codeFrame = require('babel-code-frame');
 var internalOptions = ['inlineOnly'];
 var hasOwn = Object.prototype.hasOwnProperty;
 
@@ -51,10 +52,8 @@ module.exports = function (lasso, pluginConfig) {
             } catch (e) {
                 if (e.line) {
                     var dependency = lassoContext.dependency;
-                    console.error('Unable to minify the following code for ' + dependency + ' at line ' + e.line + ' column ' + e.col + ':\n' +
-                                  '------------------------------------\n' +
-                                  code + '\n' +
-                                  '------------------------------------\n');
+                    var frame = codeFrame(code, e.line, e.col, { highlightCode: true });
+                    console.error(e.message + ' in ' + dependency + ' at line ' + e.line + ' column ' + e.col + ':\n' + frame);
                     return code;
                 } else {
                     throw e;

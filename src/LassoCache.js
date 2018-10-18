@@ -11,6 +11,10 @@ function safeFilename(name) {
     return name.replace(/[^A-Za-z0-9_\-\.\/]/g, '-');
 }
 
+function waitImmediate() {
+    return new Promise(resolve => setImmediate(resolve));
+}
+
 var CACHE_DEFAULTS = {
     '*': { // Any profile
         '*': { // Any cache
@@ -150,19 +154,37 @@ LassoCache.prototype = {
         return raptorCache.flushAll();
     },
 
-    async getLassoPageResult (cacheKey, options) {
+    async getLassoPageResult(cacheKey, options) {
         return this.lassoPageResultCache.get(cacheKey, options);
     },
 
     async getBundleMappings (id, builder) {
+        await waitImmediate();
+
+        while (process.domain) {
+            process.domain.exit();
+        }
+
         return this.bundleMappingsCache.get(id.toString(), { builder });
     },
 
     async getLassoedResource (path, builder) {
+        await waitImmediate();
+
+        while (process.domain) {
+            process.domain.exit();
+        }
+
         return this.lassoedResourcesCache.get(path, { builder });
     },
 
     async getDependencyFingerprint (cacheKey, lastModified, builder) {
+        await waitImmediate();
+
+        while (process.domain) {
+            process.domain.exit();
+        }
+
         return this.dependencyFingerprintsCache.get(cacheKey, {
             lastModified,
             builder
